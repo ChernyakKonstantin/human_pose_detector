@@ -15,7 +15,6 @@ class RequestHandler(BaseRequestHandler):
         super().__init__(*args, **kwargs)
 
     def handle(self) -> None:
-        logging.debug('Got request')
         self.server: Server
         image = self.server.get_response_image()
         self.request.sendall(image)
