@@ -4,17 +4,17 @@
 </head>
 <body>
   <h1>Video stream</h1>
-    <img src="{{url_for('_video_feed')}}" alt="video_frame">
+    <img src="{{ url_for('_video_feed') }}" alt="video_frame">
   <h2>The last pictures for DB:</h2>
-   <img src="{{url_for('_get_db_images')}}" alt="db_frame_1"></p>
-   <img src="{}" alt="db_frame_2">
-   <img src="{}" alt="db_frame_3">
-   <img src="{}" alt="db_frame_4">
-   <img src="{}" alt="db_frame_5">
-   <img src="{}" alt="db_frame_6">
-   <img src="{}" alt="db_frame_7">
-   <img src="{}" alt="db_frame_8">
-   <img src="{}" alt="db_frame_9">
-   <img src="{}" alt="db_frame_10">
+   <img src="{{ url_for('_get_db_images', img_index=0) }}" alt="db_frame_1">
+   <img src="{{ url_for('_get_db_images', img_index=1) }}" alt="db_frame_2">
+   <img src="{{ url_for('_get_db_images', img_index=2) }}" alt="db_frame_3">
+   <img src="{{ url_for('_get_db_images', img_index=3) }}" alt="db_frame_4">
+   <img src="{{ url_for('_get_db_images', img_index=4) }}" alt="db_frame_5">
+   <img src="{{ url_for('_get_db_images', img_index=5) }}" alt="db_frame_6">
+   <img src="{{ url_for('_get_db_images', img_index=6) }}" alt="db_frame_7">
+   <img src="{{ url_for('_get_db_images', img_index=7) }}" alt="db_frame_8">
+   <img src="{{ url_for('_get_db_images', img_index=8) }}" alt="db_frame_9">
+   <img src="{{ url_for('_get_db_images', img_index=9) }}" alt="db_frame_10">
 </body>
 </html>
