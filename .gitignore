@@ -1,0 +1,4 @@
+/.idea
+*.pth
+*.mp4
+/video_processing/backend/pose_estimator/higher-hrnet-w32/

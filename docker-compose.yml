@@ -1,0 +1,50 @@
+version: "3.9"
+
+services:
+  database:
+    container_name: postgres_container
+    image: postgres:13-alpine
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    volumes:
+      - ./database/:/docker-entrypoint-initdb.d/
+      - database_data:/var/lib/postgresql/data
+    ports:
+      - '5433:5432'
+    networks:
+      - database_network
+
+  video_processing:
+    build: video_processing/
+    ports:
+      - '81:80'
+    networks:
+      - stream_network
+      - database_network
+    depends_on:
+      - database
+
+  web_application:
+    build: web_application/
+    ports:
+      - '5001:5000'
+    networks:
+      - stream_network
+      - database_network
+      - frontend_network
+    depends_on:
+      - database
+      - video_processing
+
+networks:
+  database_network:
+    driver: bridge
+  stream_network:
+    driver: bridge
+  frontend_network:
+    driver: bridge
+
+volumes:
+  database_data:

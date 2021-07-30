@@ -1,0 +1,16 @@
+
+
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+flask = "*"
+numpy = "*"
+scipy = "*"
+openvino = "*"
+torch = "*"
+psycopg2 = "*"
+python-decouple = "*"
+opencv-contrib-python = "*"
