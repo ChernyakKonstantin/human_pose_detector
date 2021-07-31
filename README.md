@@ -4,7 +4,7 @@
 
 
 Ссылка на скачивание higher-hrnet-w32: https://drive.google.com/file/d/1NtQmsiEasUffF_yjPylbo2ad1vkjPFzO/view?usp=sharing
-Ссылка на скачивание видеофайла:
+Ссылка на скачивание видеофайла: https://drive.google.com/file/d/1UBTUArWPSeqgROgcoqbhMYylaXBZDke3/view?usp=sharing
 
 
 Детектор реагирует на наличие двух поднятых рук в кадре, согласно скриншоту ТЗ.
