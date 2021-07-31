@@ -85,7 +85,7 @@ class VideoProcessor:
             if unique_pose_flag:
                 bbox = skeletons_data[index].bbox
                 img = cv.putText(img,
-                                 text=f'Unique {index}',
+                                 text=f'Unique {skeletons_data[index].index}',
                                  org=(bbox['min_x'], bbox['min_y']),
                                  fontFace=cv.FONT_HERSHEY_SIMPLEX, fontScale=1, color=0, thickness=2)
         # Отобразить рамку вокруг человека и её центр
@@ -108,7 +108,7 @@ class VideoProcessor:
                             radius=3,
                             color=color, thickness=2)
             img = cv.putText(img,
-                             text=f'Object: {index}',
+                             text=f'Object: {skeletons_data[index].index}',
                              org=(bbox['max_x'], bbox['max_y']),
                              fontFace=cv.FONT_HERSHEY_SIMPLEX, fontScale=0.5, color=0, thickness=2)
         # Отобразить номер текущего кадра

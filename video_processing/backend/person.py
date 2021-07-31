@@ -44,8 +44,17 @@ class Person:
     def unique_pose(self, value):
         self._unique_pose = value
 
-    def __init__(self, skeleton: dict, bbox: dict, _unmatched_frames_count: int = None,
+    @property
+    def index(self):
+        return self._index
+
+    @index.setter
+    def index(self, value):
+        self._index = value
+
+    def __init__(self, index: int, skeleton: dict, bbox: dict, _unmatched_frames_count: int = None,
                  no_detection_count: int = None):
+        self._index = index
         self._unmatched_frames_count = _unmatched_frames_count
         self._no_detection_count = no_detection_count
         self._skeleton = skeleton

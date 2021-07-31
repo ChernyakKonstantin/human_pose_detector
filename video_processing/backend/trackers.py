@@ -9,7 +9,7 @@ class SkeletonTracker:
     """Трекер для отслеживания скелетов. Необходим, чтобы отслеживать, кто из людей в кадре принимал заданную позу."""
     _tracking_threshold = 0.5
     # Квадарт максимального сдвига элемента скелета (чтобы не считать sqrt)
-    _shift_threshold = 100 ** 2
+    _shift_threshold = 50 ** 2
     _unmatched_frames_count = 10
 
     def __init__(self):
@@ -25,7 +25,8 @@ class SkeletonTracker:
 
     def _on_empty_intrenal_data(self, skeletons: List[dict], bboxes: List[dict]) -> None:
         for skeleton, bbox in zip(skeletons, bboxes):
-            skeleton_data = Person(skeleton, bbox, self._unmatched_frames_count)
+            person_index = len(self._skeletons)
+            skeleton_data = Person(person_index, skeleton, bbox, self._unmatched_frames_count)
             self._skeletons.append(skeleton_data)
 
     def _on_empty_input_data(self):
@@ -47,7 +48,8 @@ class SkeletonTracker:
         for skeleton, bbox in zip(skeletons, bboxes):
             for reference_skeleton in self._skeletons:
                 if not self._match_skeletons(skeleton, reference_skeleton.skeleton):
-                    new_skeletons.append(Person(skeleton, bbox, self._unmatched_frames_count))
+                    person_index = len(self._skeletons)
+                    new_skeletons.append(Person(person_index, skeleton, bbox, self._unmatched_frames_count))
         self._skeletons.extend(new_skeletons)
 
     def update(self, skeletons: List[dict], bboxes: List[dict]) -> None:
