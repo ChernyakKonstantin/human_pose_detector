@@ -6,9 +6,10 @@ import numpy as np
 
 from .database_handler.db_handler import DBHandler
 from .detectors import RaisingArmsMomentDetector, SimpleRaisedArmsDetector
-from .trackers import SkeletonTracker
+from .person import Person
 from .pose_estimator import PoseEstimator
 from .streamer import Streamer
+from .trackers import SkeletonTracker
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -77,57 +78,62 @@ class VideoProcessor:
         self._db_handler.connect()
         self._streamer.start()
 
-    def _process_frame(self, img: np.ndarray) -> np.ndarray:
-        poses, _ = self._pose_estimator.process_image(img)
-        annotated_img = self._pose_estimator.draw_poses(img, poses)
-        annotated_poses = self._pose_estimator.get_annotated_poses(poses)
-        skeleton_idx = self._skeleton_tracker.track(annotated_poses)
-        if skeleton_idx and max(skeleton_idx) > len(annotated_poses) - 1:
-            return annotated_img
-        annotated_poses = [annotated_poses[index] for index in skeleton_idx]  # Упорядочить скелеты
-        skeletons_bounding_boxes = self.get_bounding_boxes(annotated_poses)
-        skeletons_detected = self._pose_detector.detect(annotated_poses)
-        unique_raising_arms_moment_skeletons_idx = self._unique_detector.detect(skeletons_bounding_boxes,
-                                                                                skeletons_detected)
-        for index in unique_raising_arms_moment_skeletons_idx:
-            logging.debug(f'Raised arms were detected on skeleton: {index}!')
-            bounding_box = skeletons_bounding_boxes[index]
-            cropped_person = self._resize(self._crop_person(annotated_img, bounding_box))
-            self._db_handler.insert_image(self._encode_image_to_jpg(cropped_person))
+    def _draw_info(self, img: np.ndarray, skeletons_data: List[Person],
+                   poses_detected: List[bool], unique_poses: List[bool]) -> np.ndarray:
+        # Отобразить флаг измененения позы
+        for index, unique_pose_flag in enumerate(unique_poses):
+            if unique_pose_flag:
+                bbox = skeletons_data[index].bbox
+                img = cv.putText(img,
+                                 text=f'Unique {index}',
+                                 org=(bbox['min_x'], bbox['min_y']),
+                                 fontFace=cv.FONT_HERSHEY_SIMPLEX, fontScale=1, color=0, thickness=2)
         # Отобразить рамку вокруг человека и её центр
-        for i, (bbox, skeleton_detected) in enumerate(zip(skeletons_bounding_boxes, skeletons_detected)):
-            if skeleton_detected:
+        for index, (pose_detected_flag, skeleton_data) in enumerate(zip(poses_detected, skeletons_data)):
+            if pose_detected_flag:
                 color = (255, 0, 0)
             else:
                 color = (0, 255, 0)
+            bbox = skeleton_data.bbox
             bbox_center = (
                 bbox['min_x'] + int((bbox['max_x'] - bbox['min_x']) / 2),
                 bbox['min_y'] + int((bbox['max_y'] - bbox['min_y']) / 2),
             )
-            annotated_img = cv.rectangle(annotated_img,
-                                         pt1=(bbox['min_x'], bbox['min_y']),
-                                         pt2=(bbox['max_x'], bbox['max_y']),
-                                         color=color, thickness=3)
-            annotated_img = cv.circle(annotated_img,
-                                      center=bbox_center,
-                                      radius=5,
-                                      color=color, thickness=3)
-            annotated_img = cv.putText(annotated_img,
-                                       text=f'Object: {i}',
-                                       org=(bbox['max_x'], bbox['max_y']),
-                                       fontFace=cv.FONT_HERSHEY_SIMPLEX, fontScale=1, color=color, thickness=2)
-        # Отобразить флаг момента поднятия рук
-        for index in unique_raising_arms_moment_skeletons_idx:
-            bounding_box = skeletons_bounding_boxes[index]
-            annotated_img = cv.putText(annotated_img,
-                                       text=f'Unique {index}',
-                                       org=(bounding_box['min_x'], bounding_box['min_y']),
-                                       fontFace=cv.FONT_HERSHEY_SIMPLEX, fontScale=1, color=0, thickness=2)
+            img = cv.rectangle(img,
+                               pt1=(bbox['min_x'], bbox['min_y']),
+                               pt2=(bbox['max_x'], bbox['max_y']),
+                               color=color, thickness=2)
+            img = cv.circle(img,
+                            center=bbox_center,
+                            radius=3,
+                            color=color, thickness=2)
+            img = cv.putText(img,
+                             text=f'Object: {index}',
+                             org=(bbox['max_x'], bbox['max_y']),
+                             fontFace=cv.FONT_HERSHEY_SIMPLEX, fontScale=0.5, color=0, thickness=2)
         # Отобразить номер текущего кадра
-        annotated_img = cv.putText(annotated_img,
-                                   text=f'Current frame: {self._cur_frame}',
-                                   org=(0, 30),
-                                   fontFace=cv.FONT_HERSHEY_SIMPLEX, fontScale=1, color=0, thickness=2)
+        img = cv.putText(img,
+                         text=f'Current frame: {self._cur_frame}',
+                         org=(0, 30),
+                         fontFace=cv.FONT_HERSHEY_SIMPLEX, fontScale=0.5, color=0, thickness=2)
+        return img
+
+    def _process_frame(self, img: np.ndarray) -> np.ndarray:
+        skeletons, _ = self._pose_estimator.process_image(img)
+        annotated_img = self._pose_estimator.draw_poses(img, skeletons)
+        annotated_skeletons = self._pose_estimator.annotate_skeletons(skeletons)
+        skeletons_bounding_boxes = self.get_bounding_boxes(annotated_skeletons)
+        self._skeleton_tracker.update(annotated_skeletons, skeletons_bounding_boxes)
+        skeletons_data = self._skeleton_tracker.track(annotated_skeletons, skeletons_bounding_boxes)
+        poses_detected = self._pose_detector.detect([skeleton_data.skeleton for skeleton_data in skeletons_data])
+        unique_poses = self._unique_detector.detect(skeletons_data, poses_detected)
+        for index, unique_pose_flag in enumerate(unique_poses):
+            if unique_pose_flag:
+                logging.debug(f'Raised arms were detected on skeleton: {index}!')
+                bbox = skeletons_data[index].bbox
+                cropped_person = self._resize(self._crop_person(annotated_img, bbox))
+                self._db_handler.insert_image(self._encode_image_to_jpg(cropped_person))
+        annotated_img = self._draw_info(annotated_img, skeletons_data, poses_detected, unique_poses)
         return annotated_img
 
     def _reload_video(self):

@@ -6,7 +6,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 class Server(TCPServer):
     def __init__(self, *args, **kwargs):
-        self._response_image = None
+        self._response_image: bytes = b''
         super().__init__(*args, **kwargs)
 
     def get_response_image(self) -> bytes:

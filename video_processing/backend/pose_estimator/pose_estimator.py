@@ -72,7 +72,7 @@ class PoseEstimator:
         cv2.addWeighted(img, 0.4, img_limbs, 0.6, 0, dst=img)
         return img
 
-    def get_annotated_poses(self, poses: np.ndarray, point_score_threshold: float = 0.1) -> List[dict]:
+    def annotate_skeletons(self, poses: np.ndarray, point_score_threshold: float = 0.1) -> List[dict]:
         annotated_poses = []
         for pose in poses:
             points = pose[:, :2].astype(np.int32)
