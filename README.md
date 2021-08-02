@@ -11,3 +11,7 @@
 
 
 Для локального запуска необходимо заменить все значия host в .env-файлах в папках web_application, video_processing на localhost.
+
+
+![Alt Text](.gif)
+
