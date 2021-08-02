@@ -7,7 +7,7 @@
 Ссылка на скачивание видеофайла: https://drive.google.com/file/d/1UBTUArWPSeqgROgcoqbhMYylaXBZDke3/view?usp=sharing
 
 
-Детектор реагирует на наличие двух поднятых рук в кадре, согласно скриншоту ТЗ.
+Детектор реагирует на наличие двух поднятых рук в кадре.
 
 
 Для локального запуска необходимо заменить все значия host в .env-файлах в папках web_application, video_processing на localhost.
